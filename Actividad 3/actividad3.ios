@@ -1,0 +1,157 @@
+!*** Switch S1 ***
+!--------------------------------------------------------------
+ena
+config t
+hostname S1
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+exit
+
+!--- Configuración de VLANs ---
+vlan 10
+name VLAN10
+
+vlan 20
+name VLAN20
+
+!Puertos troncales
+int f0/1
+switchport mode trunk
+no shut
+
+int f0/5
+switchport mode trunk
+no shut
+
+!Puertos de acceso
+interface f0/4
+switchport mode access
+switchport access vlan 10
+
+interface f0/6
+switchport mode access
+switchport access vlan 20
+
+!Asignar ip switch
+interface vlan 1
+ip address 192.168.1.12 255.255.255.0
+no shutdown
+exit
+
+!Default gateway
+ip default-gateway 192.168.1.1
+
+!*** Switch S2 ***
+!--------------------------------------------------------------
+
+ena
+config t
+hostname S2
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+exit
+
+!--- Configuración de VLANs ---
+vlan 10
+name VLAN10
+
+vlan 20
+name VLAN20
+
+!Puertos troncales
+int f0/1
+switchport mode trunk
+no shut
+
+!Puertos de acceso
+interface f0/16
+switchport mode access
+switchport access vlan 10
+
+interface f0/18
+switchport mode access
+switchport access vlan 20
+
+!Asignar ip switch
+interface vlan 1
+ip address 192.168.1.11 255.255.255.0
+no shutdown
+exit
+
+
+!Default gateway
+ip default-gateway 192.168.1.1
+
+!*** Router R1 ***
+!--------------------------------------------------------------
+
+ena
+config t
+hostname R1
+
+no ip domain-lookup
+service password-encryption
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited.#
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+
+! Sección para crear las subinterfaces asociadas a cada VLAN
+int g0/1
+ip address 192.168.1.1 255.255.255.0
+no shut
+
+! Declaración subinterfaces
+int g0/1.10
+desc VLAN 10
+encapsulation dot1q 10
+ip add 192.168.10.1 255.255.255.0
+
+int g0/1.20
+desc VLAN 20
+encapsulation dot1q 20
+ip add 192.168.20.1 255.255.255.0
+
+int g0/0/1
+no shut
+
+ip route 0.0.0.0 0.0.0.0 g0/0/0
+
+end

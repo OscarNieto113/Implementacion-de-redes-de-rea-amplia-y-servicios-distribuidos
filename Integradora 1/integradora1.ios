@@ -38,7 +38,7 @@ no shutdown
 exit
 
 interface GigabitEthernet0/0/0
-ip address 10.21.52.132 255.255.255.252
+ip address 10.21.52.132 255.255.255.224
 no shutdown
 exit
 
@@ -128,3 +128,54 @@ interface GigabitEthernet0/0/0
 ip address 10.21.52.178 255.255.255.248
 no shutdown
 exit
+
+!VLAN
+interface GigabitEthernet0/0/1.100
+encapsulation dot1Q 100
+ip address 10.21.32.1 255.255.248.0
+exit
+
+interface GigabitEthernet0/0/1.200
+encapsulation dot1Q 200
+ip address 10.21.16.1 255.255.240.0
+exit
+
+ip routing
+
+interface GigabitEthernet0/0/1
+no shutdown
+
+
+! ==========================================
+! ============ Switch FI================
+! ==========================================
+enable
+configure terminal
+
+no ip domain-lookup
+
+! CreaciOn de la base de datos de las VLANs
+vlan 100
+name 100
+
+vlan 200
+name 200
+
+! Definicion del o los puertos TRUNK
+! Configuración de FI
+!
+interface FastEthernet0/1
+ switchport mode trunk
+ exit
+
+! Configuración de OMEGA
+!
+interface FastEthernet0/3
+ switchport mode trunk
+ exit
+
+! Configuración de NU
+!
+interface FastEthernet0/1
+ switchport mode trunk
+ exit
