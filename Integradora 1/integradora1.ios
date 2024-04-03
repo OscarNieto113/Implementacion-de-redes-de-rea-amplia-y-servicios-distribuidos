@@ -118,12 +118,6 @@ password REMOTO2020
 login
 logging sync
 
-!Puertos
-interface GigabitEthernet0/0/1
-ip address 10.21.16.1 255.255.240.0
-no shutdown
-exit
-
 interface GigabitEthernet0/0/0
 ip address 10.21.52.178 255.255.255.248
 no shutdown
@@ -140,42 +134,138 @@ encapsulation dot1Q 200
 ip address 10.21.16.1 255.255.240.0
 exit
 
-ip routing
-
 interface GigabitEthernet0/0/1
 no shutdown
 
+ip route 0.0.0.0 0.0.0.0 g0/0/0
 
 ! ==========================================
 ! ============ Switch FI================
 ! ==========================================
-enable
-configure terminal
+ena
+conf t
+
+hostname FI
 
 no ip domain-lookup
+service password-encryption 
 
-! CreaciOn de la base de datos de las VLANs
+enable secret INTEGRA2023
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password AREA145 
+login
+logging synchronous 
+
+line vty 0 4 
+password REMOTO2020 
+login
+exit
+
 vlan 100
-name 100
+name VLAN100
 
 vlan 200
-name 200
+name VLAN200
 
-! Definicion del o los puertos TRUNK
-! Configuración de FI
-!
-interface FastEthernet0/1
- switchport mode trunk
- exit
+int range f0/1-3
+switchport mode trunk
+no shut
 
-! Configuración de OMEGA
-!
-interface FastEthernet0/3
- switchport mode trunk
- exit
+ip default-gateway 10.21.52.178
 
-! Configuración de NU
-!
-interface FastEthernet0/1
- switchport mode trunk
- exit
+! ==========================================
+! ============ Switch NU================
+! ==========================================
+ena
+conf t
+
+hostname NU
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret INTEGRA2023
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password AREA145 
+login
+logging synchronous 
+
+line vty 0 4 
+password REMOTO2020 
+login
+exit
+
+vlan 100
+name VLAN100
+
+vlan 200
+name VLAN200
+
+int range f0/1-2
+switchport mode trunk
+no shut
+
+int range f0/3
+switchport mode access
+switchport access vlan 100
+no shut
+
+int range f0/4
+switchport mode access
+switchport access vlan 200
+no shut
+
+ip default-gateway 10.21.52.178
+
+! ==========================================
+! ============ Switch OMEGA================
+! ==========================================
+ena
+conf t
+
+hostname OMEGA
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret INTEGRA2023
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password AREA145 
+login
+logging synchronous 
+
+line vty 0 4 
+password REMOTO2020 
+login
+exit
+
+vlan 100
+name VLAN100
+
+vlan 200
+name VLAN200
+
+int range f0/1-2
+switchport mode trunk
+no shut
+
+int range f0/3
+switchport mode access
+switchport access vlan 100
+no shut
+
+int range f0/4
+switchport mode access
+switchport access vlan 200
+no shut
+
+ip default-gateway 10.21.52.178
