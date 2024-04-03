@@ -1,0 +1,130 @@
+! ==========================================
+! ============ RouterGAMMA ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname GAMMA
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret INTEGRA2023
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password AREA145
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 4
+password REMOTO2020
+login
+logging sync
+
+!Puertos
+interface GigabitEthernet0/0/1
+ip address 10.21.0.1 255.255.240.0
+no shutdown
+exit
+
+interface GigabitEthernet0/0/0
+ip address 10.21.52.132 255.255.255.252
+no shutdown
+exit
+
+! ==========================================
+! ============ RouterETA ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname ETA
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret INTEGRA2023
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password AREA145
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 4
+password REMOTO2020
+login
+logging sync
+
+!Puertos
+interface GigabitEthernet0/0/1
+ip address 10.21.52.190 255.255.255.252
+no shutdown
+exit
+interface GigabitEthernet0/0/0
+ip address 10.21.52.186 255.255.255.252
+no shutdown
+exit
+
+! ==========================================
+! ============ RouterSIGMA ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname SIGMA
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret INTEGRA2023
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password AREA145
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 4
+password REMOTO2020
+login
+logging sync
+
+!Puertos
+interface GigabitEthernet0/0/1
+ip address 10.21.16.1 255.255.240.0
+no shutdown
+exit
+
+interface GigabitEthernet0/0/0
+ip address 10.21.52.178 255.255.255.248
+no shutdown
+exit
