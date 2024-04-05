@@ -269,3 +269,143 @@ switchport access vlan 200
 no shut
 
 ip default-gateway 10.21.52.178
+
+! ==========================================
+! ============ Switch TAU================
+! ==========================================
+enable
+config terminal
+
+hostname TAU
+
+!Habilitar puerto de ruteo
+interface f0/3
+no switchport
+ip address 10.21.52.179 255.255.255.248
+no shut
+exit
+
+! CONFIGURAR VLANs
+vlan 70
+exit
+
+vlan 80
+exit
+
+vlan 90
+exit
+
+interface vlan 70
+ip address 10.21.48.1 255.255.252.0
+
+interface vlan 80
+ip address 10.21.44.1 255.255.252.0
+
+interface vlan 90
+ip address 10.21.40.1 255.255.252.0
+
+! CONFIGURAR PUERTOS TRONCALES
+interface g0/1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+no shut
+exit
+
+interface g0/2
+switchport trunk encapsulation dot1q
+switchport mode trunk
+no shut
+exit
+
+! CONFIGURAR RUTA POR DEFAULT HACIA INTERNET
+ip route 0.0.0.0 0.0.0.0 f0/3
+
+! ==========================================
+! ============ Switch IOTA================
+! ==========================================
+en
+config t
+
+hostname IOTA
+
+! CONFIGURAR VLANs
+vlan 70
+exit
+
+vlan 80
+exit
+
+vlan 90
+exit
+
+! CONFIGURAR PUERTOS TRONCALES
+interface f0/1
+switchport mode trunk
+no shut
+exit
+
+interface f0/2
+switchport mode trunk
+no shut
+exit
+
+! CONFIGURAR PUERTOS DE ACCESO
+interface f0/3
+switchport mode access
+switchport access vlan 70
+no shutdown
+
+interface f0/4
+switchport mode access
+switchport access vlan 80
+no shutdown
+
+interface f0/5
+switchport mode access
+switchport access vlan 90
+no shutdown
+
+! ==========================================
+! ============ Switch PSI================
+! ==========================================
+en
+config t
+
+hostname PSI
+
+! CONFIGURAR VLANs
+vlan 70
+exit
+
+vlan 80
+exit
+
+vlan 90
+exit
+
+! CONFIGURAR PUERTOS TRONCALES
+interface f0/1
+switchport mode trunk
+no shut
+exit
+
+interface f0/3
+switchport mode trunk
+no shut
+exit
+
+! CONFIGURAR PUERTOS DE ACCESO
+interface f0/5
+switchport mode access
+switchport access vlan 70
+no shutdown
+
+interface f0/2
+switchport mode access
+switchport access vlan 80
+no shutdown
+
+interface f0/4
+switchport mode access
+switchport access vlan 90
+no shutdown
