@@ -1,0 +1,39 @@
+! ==========================================
+! ============ Switch ================
+! ==========================================
+enable
+configure terminal
+
+vlan 10
+vlan 30
+
+interface f0/11
+switchport mode access
+switchport access vlan 10
+no shutdown
+
+interface f0/6
+switchport mode access
+switchport access vlan 30
+no shutdown
+
+interface g0/1
+switchport mode trunk
+no shutdown
+
+! ==========================================
+! ============ Router ================
+! ==========================================
+enable
+configure terminal
+
+interface g0/0.10
+encapsulation dot1Q 10
+ip address 172.17.10.1 255.255.255.0
+
+int g0/0.30
+encapsulation dot1Q 30
+ip address 172.17.30.1 255.255.255.0
+
+interface g0/0
+no shutdown
