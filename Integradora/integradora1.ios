@@ -42,6 +42,23 @@ ip address 10.21.52.132 255.255.255.224
 no shutdown
 exit
 
+!OSPF
+router ospf 8
+network 10.21.0.0 0.0.15.255 area 0
+network 10.21.52.128 0.0.0.31 area 0
+
+!DHCP
+!Excluir IP DHCP
+ip dhcp excluded-address 10.21.0.1 10.21.0.6
+
+!DHCP
+ip dhcp pool INTEGRA
+network 10.21.0.0 255.255.240.0
+dns-server 10.21.52.174
+!Direccion de gateway del Router
+default-router 10.21.0.1
+
+
 ! ==========================================
 ! ============ RouterETA ================
 ! ==========================================
