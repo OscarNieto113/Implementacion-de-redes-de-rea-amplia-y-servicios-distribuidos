@@ -6,6 +6,28 @@ config t
 
 hostname R1
 
+!Excluir IP DHCP
+ip dhcp excluded-address 200.10.5.62
+ip dhcp excluded-address 200.10.5.70
+ip dhcp excluded-address 200.10.5.61
+ip dhcp excluded-address 200.10.5.69
+ip dhcp excluded-address 200.10.5.1
+ip dhcp excluded-address 200.10.5.65
+
+!DHCP
+ip dhcp pool R1G0/0
+network 200.10.5.0 255.255.255.192
+dns-server 64.1.2.3
+!Direccion de gateway del Router
+default-router 200.10.5.62
+
+!DHCP
+ip dhcp pool R1G0/1
+network 200.10.5.64 255.255.255.248
+dns-server 64.1.2.3
+!Direccion de gateway del Router
+default-router 200.10.5.70
+
 enable password class
 
 no ip domain-lookup
@@ -43,6 +65,7 @@ logging synchronous
 exit
 
 ! Ruta por default hacia el ISP
+ip route 0.0.0.0 0.0.0.0 s0/0/1
 
 ---------------------------
 Configuración S1
@@ -68,6 +91,10 @@ line vty 0 15
 password cisco
 login
 exit
+
+interface vlan 1
+ip address 200.10.5.61 255.255.255.198
+no shutdown
 
 end
 
@@ -96,10 +123,15 @@ password cisco
 login
 exit
 
+interface vlan 1
+ip address 200.10.5.69 255.255.255.248
+no shutdown
+
 end
 
 ---------------------------
 Configuración ISP
 ---------------------------
-
 ! Rutas estáticas hacia las redes de la empresa
+ip route 200.10.5.0 255.255.255.192 s0/0/0
+ip route 200.10.5.64 255.255.255.248 s0/0/0
