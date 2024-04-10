@@ -1,0 +1,120 @@
+--------- MyISP --------
+Ya configurado
+
+-------- RMabe -------
+enable
+config t
+
+hostname RMabe
+
+!DHCP
+ip dhcp excluded-address 194.8.20.30
+ip dhcp excluded-address 192.6.10.190
+ip dhcp excluded-address 192.6.10.131
+ip dhcp excluded-address 202.50.4.254
+
+ip dhcp pool RMabe-G0/0
+network 194.8.20.0 255.255.255.224
+dns-server 8.3.2.1
+default-router 194.8.20.30
+
+ip dhcp pool R2-G0/0
+network 192.6.10.128 255.255.255.192
+dns-server 8.3.2.1
+default-router 192.6.10.190
+
+ip dhcp pool R2-G0/1
+network 202.50.4.128 255.255.255.128
+dns-server 8.3.2.1
+default-router 202.50.4.190
+
+service password-enc
+no ip domain lookup
+
+line con 0
+password cisco
+login
+logging sync
+
+line vty 0 4
+password cisco
+login
+
+enable password class
+
+int S0/0/0
+description La conexion con el ISP 
+ip address 150.1.3.226 255.255.255.252
+no shut
+
+int S0/0/1
+description La conexion con RA 
+ip address 130.15.2.249 255.255.255.252
+clock rate 128000
+no shut
+
+int g0/0
+description SubredAmarilla
+ip address 194.8.20.30 255.255.255.224
+no shut
+
+ip route 0.0.0.0 0.0.0.0 s0/0/0
+
+router ospf 2024
+network 194.8.20.0 0.0.0.31 area 0
+network 130.15.2.248 0.0.0.3 area 0
+passive-interface s0/0/0
+passive-interface g0/0
+default-information originate
+
+end
+
+!-------- RA ----------
+enable
+config t
+
+hostname RA
+
+service password-enc
+no ip domain lookup
+
+line con 0
+password cisco
+login
+logging sync
+
+line vty 0 4
+password cisco
+login
+
+enable password class
+
+int g0/0
+description SubredNaranja
+ip add 192.6.10.190 255.255.255.192
+!DHCP Se pone en la int que va a dar dir dinamico
+ip helper-address 130.15.2.249
+!Cualquier ip de mi RF de cualquier int 
+no shut
+
+int g0/1
+description Subred Verde
+ip add 202.50.4.254 255.255.255.128
+!DHCP Se pone en la int que va a dar dir dinamico
+ip helper-address 130.15.2.249
+!Cualquier ip de mi RF de cualquier int 
+no shut
+
+int S0/0/0
+description La conexion con RMabe 
+ip address 130.15.2.250 255.255.255.252
+no shut
+
+router ospf 2024
+network 192.6.10.128 0.0.0.63 area 0
+network 202.50.4.128 0.0.0.127 area 0
+network 130.15.2.248 0.0.0.3 area 0
+passive-interface g0/0
+passive-interface g0/1
+
+end
