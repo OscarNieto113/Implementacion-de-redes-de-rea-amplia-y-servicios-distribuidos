@@ -1,0 +1,364 @@
+! ==========================================
+! ============ ISP ================
+! ==========================================
+enable
+configure terminal
+ip route 206.7.10.0 255.255.255.240 s0/0/1
+ip route 195.2.8.96 255.255.255.248 s0/0/1
+ip route 195.2.8.64 255.255.255.224 s0/0/1
+ip route 195.2.8.0 255.255.255.192 s0/0/1
+
+
+! ==========================================
+! ============ RFrontera ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname RFrontera
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 4
+password cisco
+login
+logging sync
+
+!Puertos
+interface s0/0/0
+ip address 210.32.1.66 255.255.255.252
+no shut
+
+interface g0/1
+ip address 150.7.20.194 255.255.255.252
+no shut
+
+interface g0/0
+ip address 206.7.10.1 255.255.255.240
+no shut
+
+!OSPF
+router ospf 10
+network 210.32.1.64 0.0.0.3 area 0
+network 150.7.20.192 0.0.0.3 area 0
+network 206.7.10.0 0.0.0.15 area 0
+
+passive-interface s0/0/0
+passive-interface g0/0
+
+default-information originate
+
+!Excluir IP DHCP
+ip dhcp excluded-address 206.7.10.1
+ip dhcp excluded-address 195.2.8.94
+ip dhcp excluded-address 195.2.8.97
+
+!DHCP
+ip dhcp pool RFG0/0
+network 206.7.10.0 255.255.255.240
+dns-server 50.3.7.9
+!Direccion de gateway del Router
+default-router 206.7.10.1
+
+ip dhcp pool Regus-500
+network 195.2.8.64 255.255.255.224
+dns-server 50.3.7.9
+default-router 195.2.8.97
+
+ip dhcp pool Regus-800
+network 195.2.8.0 255.255.255.192
+dns-server 50.3.7.9
+default-router 195.2.8.97
+
+!Direccion de gateway del Router
+ip route 0.0.0.0 0.0.0.0 s0/0/0
+
+! ==========================================
+! ============ SCapa3 ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname Regus
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+!Puertos
+interface g0/1
+no switchport
+ip address 150.7.20.193 255.255.255.252
+no shut
+exit
+
+interface g0/2
+switchport trunk encapsulation dot1q
+switchport mode trunk
+no shut
+exit
+
+!Crear VLANs
+vlan 500
+name Administradores
+exit
+
+vlan 800
+name Usuarios
+exit
+
+!Configurar VLANs
+interface vlan 1
+ip address 195.2.8.97 255.255.255.248
+no shut
+
+interface vlan 500
+ip address 195.2.8.65 255.255.255.224
+!DHCP Se pone en la int que va a dar dir dinamico
+ip helper-address 150.7.20.194
+
+interface vlan 800
+ip address 195.2.8.1 255.255.255.192
+!DHCP Se pone en la int que va a dar dir dinamico
+ip helper-address 150.7.20.194
+
+!Activar el ruteo del switch
+ip routing
+
+!OSPF
+router ospf 10
+network 150.7.20.192 0.0.0.3 area 0
+network 195.2.8.96 0.0.0.7 area 0
+network 195.2.8.65 0.0.0.31 area 0
+network 195.2.8.0 0.0.0.63 area 0
+
+passive-interface g0/2
+
+! ==========================================
+! ============ SRegus ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname SRegus
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+!Puertos
+interface g0/1
+switchport mode trunk
+no shut
+
+interface f0/1
+switchport mode trunk
+no shut
+
+interface f0/2
+switchport mode trunk
+no shut
+
+!Crear VLANs
+vlan 500
+name Administradores
+exit
+
+vlan 800
+name Usuarios
+exit
+
+! CONFIGURAR IP DEL SWITCH
+interface vlan 1
+ip address 195.2.8.98 255.255.255.248
+no shut
+
+ip default-gateway 195.2.8.97
+
+! ==========================================
+! ============ S1 ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname S1
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+!Crear VLANs
+vlan 500
+name Administradores
+exit
+
+vlan 800
+name Usuarios
+exit
+
+! CONFIGURAR PUERTOS DE ACCESO
+interface range f0/2-3
+switchport mode access
+switchport access vlan 500
+
+interface f0/9
+switchport mode access
+switchport access vlan 800
+
+! CONFIGURAR PUERTOS TRONCALES
+interface f0/1
+switchport mode trunk
+no shut
+exit
+
+! CONFIGURAR IP DEL SWITCH
+interface vlan 1
+ip address 195.2.8.98 255.255.255.248
+no shut
+
+ip default-gateway 195.2.8.97
+
+! ==========================================
+! ============ S2 ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname S2
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+!Crear VLANs
+vlan 500
+name Administradores
+exit
+
+vlan 800
+name Usuarios
+exit
+
+! CONFIGURAR PUERTOS DE ACCESO
+interface f0/3
+switchport mode access
+switchport access vlan 500
+
+interface f0/10
+switchport mode access
+switchport access vlan 800
+
+! CONFIGURAR PUERTOS TRONCALES
+interface f0/1
+switchport mode trunk
+no shut
+exit
+
+! CONFIGURAR IP DEL SWITCH
+interface vlan 1
+ip address 195.2.8.100 255.255.255.248
+no shut
+
+ip default-gateway 195.2.8.97
