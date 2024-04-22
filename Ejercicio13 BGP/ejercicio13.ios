@@ -1,0 +1,46 @@
+!R1
+enable
+configure terminal
+
+router ospf 1
+network 10.0.13.0 0.0.0.3 area 0
+network 10.0.12.0 0.0.0.3 area 0
+!Loopback
+network 1.1.1.0 0.0.0.255 area 0
+passive-interface g0/0
+default-information originate
+
+!Configurar bgp
+!Habilitar el ruteo BGP Numero de sistema de la empresa
+router bgp 65000
+!Vecinos BGP. Ip del next-hop. BGP del vecino
+neighbor 100.0.0.1 remote-as 65001
+!Publicar las redes de mi empresa
+network 1.1.1.1 mask 255.255.255.255
+network 2.2.2.2 mask 255.255.255.255
+network 3.3.3.3 mask 255.255.255.255
+network 10.0.12.0 mask 255.255.255.252
+network 10.0.13.0 mask 255.255.255.252
+network 10.0.23.0 mask 255.255.255.252
+
+ip route 0.0.0.0 0.0.0.0 g0/0
+
+!R2
+enable
+configure terminal
+
+router ospf 1
+network 10.0.12.0 0.0.0.3 area 0
+network 10.0.23.0 0.0.0.3 area 0
+!Loopback
+network 2.2.2.0 0.0.0.255 area 0
+
+!R3
+enable
+configure terminal
+
+router ospf 1
+network 10.0.13.0 0.0.0.3 area 0
+network 10.0.23.0 0.0.0.3 area 0
+!Loopback
+network 3.3.3.0 0.0.0.255 area 0

@@ -1,0 +1,42 @@
+! ==========================================
+! ============ R1 ================
+! ==========================================
+enable
+configure terminal
+
+interface tunnel 0
+!Interfaz que será usada para el tunel
+tunnel source g0/0/0
+!Ip publica de destino
+tunnel destination 200.0.0.2
+!direccion privada del tunel
+ip address 192.168.1.1 255.255.255.252
+exit
+
+router ospf 1
+network 192.168.1.0 0.0.0.3 area 0
+network 10.0.1.0 0.0.0.255 area 0
+passive-interface g0/0
+
+ip route 0.0.0.0 0.0.0.0 100.0.0.1
+
+! ==========================================
+! ============ R2 ================
+! ==========================================
+enable
+configure terminal
+
+interface tunnel 0
+!Interfaz que será usada para el tunel
+tunnel source g0/0/0
+!Ip publica de destino
+tunnel destination 100.0.0.2
+!direccion privada del tunel
+ip address 192.168.1.2 255.255.255.252
+
+router ospf 1
+network 192.168.1.0 0.0.0.3 area 0
+network 10.0.2.0 0.0.0.255 area 0
+passive-interface g0/0
+
+ip route 0.0.0.0 0.0.0.0 200.0.0.1
