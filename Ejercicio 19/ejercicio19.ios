@@ -1,0 +1,338 @@
+! ======================
+! ======== RA ==========
+! ======================
+
+ena
+config t
+hostname RA
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 4 
+password cisco 
+login
+exit
+
+int s0/0/0
+desc Enlace con RB
+ip address 10.0.3.130 255.255.255.252
+clock rate 128000
+no shut
+
+! Declaraci�n de subinterfaces
+interface g0/0.1
+encapsulation dot1q 1
+ip address 10.0.1.6 255.255.255.248
+no shut
+
+interface g0/0.20
+encapsulation dot1q 20
+ip address 10.0.2.30 255.255.255.224
+ip helper-address 10.0.3.129
+no shut
+
+interface g0/0.30
+encapsulation dot1q 30
+ip address 10.0.3.14 255.255.255.240
+ip helper-address 10.0.3.129
+no shut
+
+interface g0/0
+no shut
+
+
+! Configuraci�n de OSPF
+router ospf 1
+network 10.0.3.128 0.0.0.3 area 0
+network 10.0.1.0 0.0.0.7 area 0
+network 10.0.2.0 0.0.0.31 area 0
+network 10.0.3.0 0.0.0.15 area 0
+passive-interface g0/0
+exit
+
+
+
+! ====================
+! ==== SCompany ======
+! ====================
+
+ena
+conf t
+hostname SCompany
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+exit
+
+! Creaci�n de la base de datos de las VLANs
+vlan 20
+name Users
+exit
+
+vlan 30
+name Services
+exit
+
+! Definici�n de puertos trunk
+interface g0/1
+switchport mode trunk
+no shut
+exit
+
+interface fa0/1
+switchport mode trunk
+no shut
+exit
+
+interface fa0/2
+switchport mode trunk
+no shut
+exit
+
+! Configuraci�n de la IP del switch y su default gateway
+interface vlan 1
+ip address 10.0.1.1 255.255.255.248
+no shut
+
+ip default-gateway 10.0.1.6
+
+
+! ===================
+! ====== SOeste =====
+! ===================
+
+ena
+conf t
+hostname SOeste
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+exit
+
+! Creaci�n de la base de datos de las VLANs
+vlan 20
+name Users
+exit
+
+vlan 30
+name Services
+exit
+
+! Definici�n de los puertos de acceso
+interface fa0/2
+switchport mode access
+switchport access vlan 20
+no shut
+exit
+
+interface fa0/20
+switchport mode access
+switchport access vlan 30
+no shut
+exit
+
+! Definici�n de los puertos troncales
+interface fa0/1
+switchport mode trunk
+no shut
+exit
+
+! Configuraci�n de la IP del switch y su default gateway
+interface vlan 1
+ip address 10.0.1.2 255.255.255.248
+no shut
+
+ip default-gateway 10.0.1.6
+
+! =====================
+! ====== SEste ========
+! =====================
+
+ena
+conf t
+hostname SEste
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+exit
+
+! Creaci�n de la base de datos de las VLANs
+vlan 20
+name Users
+exit
+
+vlan 30
+name Services
+exit
+
+! Definici�n de los puertos de acceso
+interface fa0/2
+switchport mode access
+switchport access vlan 20
+no shut
+exit
+
+interface fa0/20
+switchport mode access
+switchport access vlan 30
+no shut
+exit
+
+! Definici�n de los puertos troncales
+interface fa0/1
+switchport mode trunk
+no shut
+exit
+
+! Configuraci�n de la IP del switch y su default gateway
+interface vlan 1
+ip address 10.0.1.3 255.255.255.248
+no shut
+
+ip default-gateway 10.0.1.6
+
+! ======================
+! ======== RB ==========
+! ======================
+
+en
+config t
+
+hostname RB
+
+interface G0/1
+ip address 10.0.7.254 255.255.252.0
+no shut
+exit
+
+interface Serial0/1/0
+ip address 65.10.8.66 255.255.255.224
+no shut
+exit
+
+interface Serial0/1/1
+ip address 10.0.3.129 255.255.255.252
+no shut
+exit
+
+router ospf 1
+passive-interface GigabitEthernet0/1
+passive-interface Serial0/1/0
+network 10.0.3.128 0.0.0.3 area 0
+network 10.0.4.0 0.0.3.255 area 0
+default-information originate
+exit
+
+! Configuraci�n de DHCP centralizado
+
+ip dhcp excluded-address 10.0.7.254
+ip dhcp excluded-address 10.0.3.1
+ip dhcp excluded-address 10.0.1.6
+ip dhcp excluded-address 10.0.2.30
+ip dhcp excluded-address 10.0.3.14
+
+ip dhcp pool RB
+network 10.0.4.0 255.255.252.0 
+default-router 10.0.7.254
+dns-server 5.5.5.5
+exit
+
+ip dhcp pool RA.amarilla
+network 10.0.2.0 255.255.255.224
+default-router 10.0.2.30
+dns-server 5.5.5.5
+exit
+
+ip dhcp pool RA.morada
+network 10.0.3.0 255.255.255.240
+default-router 10.0.3.14
+dns-server 5.5.5.5
+exit
+! Configuraci�n de NAT est�tico
+ip nat inside source static 10.0.3.1 180.15.2.128
+
+
+! Configuraci�n de PAT
+ip nat pool MyPool 180.15.2.129 180.15.2.255 netmask 255.255.255.128
+access-list 1 permit any
+ip nat inside source list 1 pool MyPool overload
+! Configuraci�n de interfaces con nat interno y externo
+int s0/1/0
+ip nat outside
+exit
+
+int s0/1/1
+ip nat inside
+exit
+
+int g0/1
+ip nat inside
+exit
+
+ip route 0.0.0.0 0.0.0.0 s0/1/0
+
+! =======================
+! ======== ISP ==========
+! =======================
+
+! Ya configurado
+
+! Configuraci�n de rutas est�ticas hacia las redes de la empresa
+ip route 10.0.2.0 255.255.255.224 s0/0/0
+ip route 10.0.3.0 255.255.255.240 s0/0/0
+ip route 10.0.1.0 255.255.255.248 s0/0/0
+ip route 10.0.4.0 255.255.252.0 s0/0/0
+
+
+! Configuraci�n de ruta est�tica hacia RB con el 
+! rango de direcciones de la red p�blica asignada
+ip route 180.15.2.128 255.255.255.128 65.10.8.66
