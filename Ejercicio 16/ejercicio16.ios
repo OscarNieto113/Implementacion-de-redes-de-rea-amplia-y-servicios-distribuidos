@@ -1,0 +1,6 @@
+access-list 1 deny 132.254.89.0 0.0.0.127
+permit any
+
+!RA
+int g0/0.10
+ip access-group 1 out 

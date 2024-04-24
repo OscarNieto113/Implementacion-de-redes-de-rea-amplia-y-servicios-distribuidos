@@ -1,0 +1,108 @@
+!---------------------------------------------------------------
+!Router ISP
+!---------------------------------------------------------------
+en
+config t
+
+ip route 10.0.0.0 255.255.254.0 s0/0/0
+ip route 10.0.4.0 255.255.252.0 s0/0/0
+
+!NAT
+!Pool de direcciones publicas / Interfaz por la que va a salir
+ip route 170.15.9.32 255.255.255.224 s0/1/0
+
+
+!---------------------------------------------------------------
+!Router A
+!---------------------------------------------------------------
+en
+config t
+
+hostname RA
+
+interface G0/1
+ip address 10.0.1.254 255.255.254.0
+ip helper-address 10.0.3.129
+no shut
+
+interface Serial0/1/0
+ip address 10.0.3.130 255.255.255.252
+clock rate 128000
+no shut
+
+router ospf 1
+passive-interface GigabitEthernet0/1
+network 10.0.0.0 0.0.1.255 area 0
+network 10.0.3.128 0.0.0.3 area 0
+
+!---------------------------------------------------------------
+!Router B
+!---------------------------------------------------------------
+en
+config t
+
+hostname RB
+
+interface G0/1
+ip address 10.0.7.254 255.255.252.0
+no shut
+
+interface Serial0/1/0
+ip address 65.10.8.66 255.255.255.224
+no shut
+
+interface Serial0/1/1
+ip address 10.0.3.129 255.255.255.252
+no shut
+
+ip route 0.0.0.0 0.0.0.0 s0/1/0
+
+router ospf 1
+passive-interface GigabitEthernet0/1
+passive-interface Serial0/1/0
+network 10.0.3.128 0.0.0.3 area 0
+network 10.0.4.0 0.0.3.255 area 0
+default-information originate
+exit
+
+!DHCP Centralizado
+ip dhcp excluded-address 10.0.1.254
+ip dhcp excluded-address 10.0.7.254
+ip dhcp excluded-address 10.0.1.253
+
+ip dhcp pool RA_g0/1
+network 10.0.0.0 255.255.254.0
+default-router 10.0.1.254
+dns-server 5.5.5.5
+
+ip dhcp pool RB_g0/1
+network 10.0.4.0 255.255.252.0
+default-router 10.0.7.254
+dns-server 5.5.5.5
+
+!NAT estatico
+ip nat inside source static 10.0.1.253 170.15.9.32
+
+!NAT Puro
+ip nat pool MyPool 170.15.9.33 170.15.9.63 netmask 255.255.255.224
+
+
+!Que direcciones se podrán traducir
+access-list 1 permit any
+!NAT Puro
+ip nat inside source list 1 pool MyPool
+
+!PAT 
+!ip nat inside source list 1 pool MyPool overload
+
+int s0/1/0
+ip nat outside
+exit
+
+int s0/1/1
+ip nat inside
+exit
+
+int g0/1
+ip nat inside
+exit
