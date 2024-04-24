@@ -50,6 +50,19 @@ no shut
 interface g0/0
 no shut
 
+!ACL
+access-list 10 deny 10.0.4.0 0.0.3.255
+access-list 10 permit any
+
+interface g0/0.30
+ip access-group 10 out
+
+access-list 101 deny tcp 10.0.2.0 0.0.0.31 host 52.84.150.54 eq www
+access-list 101 permit ip any any
+
+interface g0/0.20
+ip access-group 101 in
+
 
 ! Configuraci�n de OSPF
 router ospf 1
