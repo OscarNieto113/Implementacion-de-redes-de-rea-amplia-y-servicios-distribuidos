@@ -1,0 +1,373 @@
+! ==========================================
+! ============ ISP ================
+! ==========================================
+ip route 172.29.5.144 255.255.255.248 s0/0/1
+ip route 172.29.5.128 255.255.255.240 s0/0/1
+ip route 172.29.5.0 255.255.255.128 s0/0/1
+ip route 172.31.20.0 255.255.255.224 s0/0/1
+
+!Publica
+ip route 190.15.7.48 255.255.255.240 210.32.1.70
+! ==========================================
+! ============ Rcohaus ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname RCohaus
+no ip domain-lookup
+
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 4
+password cisco
+login
+logging sync
+
+!Puertos
+interface s0/0/0
+ip address 192.168.7.201 255.255.255.252
+no shut
+
+interface g0/0.1
+encapsulation dot1q 1
+ip address 172.29.5.150 255.255.255.248
+no shut
+
+interface g0/0.50
+encapsulation dot1q 50
+ip address 172.29.5.142 255.255.255.240
+ip helper-address 172.31.20.30
+no shut
+
+interface g0/0.100
+encapsulation dot1q 100
+ip address 172.29.5.126 255.255.255.128
+ip helper-address 192.168.7.202
+no shut
+
+interface g0/0
+no shut
+
+!OSPF
+router ospf 1
+passive-interface GigabitEthernet0/0
+network 192.168.7.200 0.0.0.3 area 0
+network 172.29.5.144 0.0.0.7 area 0
+network 172.29.5.128 0.0.0.15 area 0
+network 172.29.5.0 0.0.0.127 area 0
+exit
+
+! ==========================================
+! ============ RF ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname RF
+no ip domain-lookup
+
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 4
+password cisco
+login
+logging sync
+
+!Puertos
+interface s0/0/1
+ip address 192.168.7.202 255.255.255.252
+no shut
+
+interface s0/0/0
+ip address 210.32.1.70 255.255.255.252
+no shut
+
+interface g0/1
+ip address 172.31.20.30 255.255.255.224
+no shut
+
+!OSPF
+router ospf 1
+passive-interface GigabitEthernet0/1
+passive-interface Serial0/0/0
+network 210.32.1.68 0.0.0.3 area 0
+network 192.168.7.200 0.0.0.3 area 0
+network 172.31.20.0 0.0.0.31 area 0
+default-information originate
+exit
+
+!DHCP Centalizado
+ip dhcp excluded-address 172.29.5.150
+ip dhcp excluded-address 172.29.5.142
+ip dhcp excluded-address 172.29.5.126
+ip dhcp excluded-address 172.29.5.150
+ip dhcp excluded-address 172.29.5.130
+ip dhcp excluded-address 172.29.20.30
+
+ip dhcp pool Azul
+network 172.31.20.0 255.255.255.224
+default-router 172.29.20.30
+dns-server 7.7.7.7
+exit
+
+ip dhcp pool Verde
+network 172.29.5.128 255.255.255.240
+default-router 172.29.5.142
+dns-server 7.7.7.7
+exit
+
+ip dhcp pool AzulClaro
+network 172.29.5.0 255.255.255.128
+default-router 172.29.5.126
+dns-server 7.7.7.7
+exit
+
+! Configuraci�n de NAT est�tico
+ip nat inside source static 172.29.5.130 190.15.7.48
+
+! Configuraci�n de PAT
+ip nat pool MyPool 190.15.7.49 190.15.7.63 netmask 255.255.255.240
+access-list 1 permit any
+ip nat inside source list 1 pool MyPool overload
+! Configuraci�n de interfaces con nat interno y externo
+int s0/0/0
+ip nat outside
+exit
+
+int s0/0/1
+ip nat inside
+exit
+
+int g0/1
+ip nat inside
+exit
+
+!ACCESS LIST
+ip access-list extended DENY_FTP
+
+deny tcp 172.31.20.0 0.0.0.31 host 172.29.5.130 eq ftp
+deny tcp 172.31.20.0 0.0.0.31 host 190.15.7.48 eq ftp
+permit ip any any
+
+interface g0/1
+ip access-group DENY_FTP out
+
+ip route 0.0.0.0 0.0.0.0 s0/0/0
+
+! ==========================================
+! ============ SCohaus ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname SCohaus
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+! Creaci�n de la base de datos de las VLANs
+vlan 50
+name Administradores
+exit
+
+vlan 100
+name Usuarios
+exit
+
+! Definici�n de puertos trunk
+interface g0/2
+switchport mode trunk
+no shut
+exit
+
+interface fa0/1
+switchport mode trunk
+no shut
+exit
+
+interface fa0/2
+switchport mode trunk
+no shut
+exit
+
+! Configuraci�n de la IP del switch y su default gateway
+interface vlan 1
+ip address 172.29.5.150 255.255.255.248
+no shut
+
+ip default-gateway 172.29.5.150
+
+! ==========================================
+! ============ S1 ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname s1
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+! Creaci�n de la base de datos de las VLANs
+vlan 50
+name Administradores
+exit
+
+vlan 100
+name Usuarios
+exit
+
+! Definici�n de puertos trunk
+interface fa0/1
+switchport mode trunk
+no shut
+exit
+
+! Definici�n de los puertos de acceso
+interface range fa0/2-9
+switchport mode access
+switchport access vlan 50
+no shut
+exit
+
+interface range fa0/10-24
+switchport mode access
+switchport access vlan 100
+no shut
+exit
+
+! ==========================================
+! ============ S2 ================
+! ==========================================
+enable
+
+!Establecer nombre del equipo
+configure terminal
+hostname S2
+
+!Deshabilitar DNS
+no ip domain-lookup
+
+!Contraseña encriptada
+service password-encryption
+
+!Contraseña de enable
+enable secret class
+
+!Establecer banner
+banner motd #¡Advertencia! Solo personal autorizado.#
+
+!Asignar password a la linea de la consola 0
+line console 0
+password cisco
+login
+logging sync
+
+!Configuracion para acceso remoto (DEFAULT 0 a 4 max) line vty
+line vty 0 15
+password cisco
+login
+logging sync
+
+! Creaci�n de la base de datos de las VLANs
+vlan 50
+name Administradores
+exit
+
+vlan 100
+name Usuarios
+exit
+
+! Definici�n de puertos trunk
+interface fa0/1
+switchport mode trunk
+no shut
+exit
+
+! Definici�n de los puertos de acceso
+interface range fa0/2-9
+switchport mode access
+switchport access vlan 50
+no shut
+exit
+
+interface range fa0/10-24
+switchport mode access
+switchport access vlan 100
+no shut
+exit
+
+ip default-gateway 172.29.5.150
