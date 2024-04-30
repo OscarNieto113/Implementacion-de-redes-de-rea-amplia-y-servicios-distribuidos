@@ -1,0 +1,32 @@
+!R1
+!1. MAPAS DE CLASES
+class-map HTTPS_MAP
+match protocol https
+
+
+class-map HTTP_MAP
+match protocol http
+
+
+class-map ICMP_MAP
+match protocol icmp
+
+!2. MAPAS DE POLITICAS
+policy-map g0/0/0_OUT
+
+class HTTPS_MAP
+set ip dscp AF31
+priority percent 10
+
+class HTTP_MAP
+set ip dscp AF32
+bandwidth percent 10
+
+class ICMP_MAP
+set ip dscp cs2
+bandwidth percent 5
+
+!3. ASOCIAR MAPA DE POLITICAS
+
+int g0/0/0
+service-policy output g0/0/0_OUT
